@@ -41,19 +41,9 @@
 (global-set-key (kbd "C-c C-h") 'epitech-file-header)
 
 (defconst header-epitech-start "EPITECH PROJECT, "
-    "Start of a standard Epitech header.")
+  "Start of a standard Epitech header.")
 (defconst header-epitech-description "File description:"
-    "Start of file description of a standard Epitech header.")
-
-(defun insert-with-one-whitespace (s)
-    "Insert a string S in the buffer preceded by a single whitespace."
-    ;; If the string is not empty
-    (if (not (string= "" s))
-        (insert
-            ;; If the char just before point is a whitespace, do not insert one
-            (if (string= " " (string (preceding-char)))
-                s
-                (concat " " s)))))
+  "Start of file description of a standard Epitech header.")
 
 ;; Alias for old function name
 ;;;###autoload
@@ -61,51 +51,58 @@
 
 ;; Inserts a standard Epitech header at the beginning of the file
 ;;;###autoload
-(defun epitech-file-header ()
-  "Puts a standard header at the beginning of the file.\n(According to mode)."
-  (interactive)
-   (save-excursion
-   (let ((projname "")(projdescription ""))
-    ;; Ask for project name
-    (setq projname (read-from-minibuffer
-                    (format "Type project name (RETURN to confirm): ")))
-    ;; Ask for project description
-    (setq projdescription
-          (read-from-minibuffer
-             (format "Type short file description (RETURN to confirm): ")))
-       
-    ;; Go to the start of the buffer, and add a empty line to separate
-    ;; the header from the rest of the file
-    (goto-char (point-min))
-    (newline)
-    (goto-char (point-min))
+(defun epitech-file-header (arg)
+  "Puts a standard header at the beginning of the file according to the mode.\n
+If ARG is present, asks for project name and description.\n
+If not, insert git repo name as project name, and file name as description"
+  (interactive "P")
+  (save-excursion
+    (let (
+          ;; Get the project name (basename of the repo's root directory)
+          (projname
+           (replace-regexp-in-string
+            "\r?\n$" ""
+            (shell-command-to-string "basename `git rev-parse --show-toplevel`")))
+          ;; Get the description : name of the current file
+          (projdescription (file-name-nondirectory buffer-file-name))
+          (comment-style 'extra-line))
 
-    ;; Start the comment that contains the header
-    (insert comment-start)
-    (newline-and-indent)
-    
-    ;; Insert the first line of the header
-    (insert-with-one-whitespace (concat header-epitech-start
-                     (format-time-string "%Y")))
-    (newline-and-indent)
-       
-    ;; Inserts the project name
-    (insert-with-one-whitespace projname)
-    (newline-and-indent)
-       
-    ;; Inserts the file description header line
-    (insert-with-one-whitespace header-epitech-description)
-    (newline-and-indent)
-       
-    ;; Inserts the file description
-    (insert-with-one-whitespace projdescription)
-    (newline)
-    
-    ;; End correctly the comment of the header
-    (if (string= comment-end "")
-        (insert comment-start)
-        (insert comment-end))
-    (newline))))
+      ;; If the universal argument is provided, asks for a project name
+      ;; and a description
+      (if arg (progn
+                ;; Ask for project name
+                (setq projname (read-from-minibuffer
+                                (format "Type project name (RETURN to confirm): ")))
+                ;; Ask for project description
+                (setq projdescription
+                      (read-from-minibuffer
+                       (format "Type short file description (RETURN to confirm): ")))))
+
+      ;; Go to the start of the buffer
+      (goto-char (point-min))
+
+      ;; Insert the first line of the header
+      (insert (concat header-epitech-start
+                      (format-time-string "%Y")))
+      (newline)
+
+      ;; Inserts the project name
+      (insert projname)
+      (newline)
+
+      ;; Inserts the file description header line
+      (insert header-epitech-description)
+      (newline)
+
+      ;; Inserts the file description
+      (insert projdescription)
+      (newline)
+
+      ;; Comment the block
+      (comment-region (point-min) (point))
+
+      ;; Separate the header from the rest of the file
+      (newline))))
 
 ;;;; Generating local keymaps for exotics modes.
 
