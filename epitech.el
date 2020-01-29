@@ -1,4 +1,4 @@
-;;; epitech.el --- Epitech configuration for Emacs
+;;; epitech.el --- Epitech configuration for Emacs -*- lexical-binding: t; -*-
 
 ;;; Author: Julien Philippon <julien.philippon@epitech.eu>
 ;;; Version: 0.1
