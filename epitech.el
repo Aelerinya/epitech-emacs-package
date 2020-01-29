@@ -65,7 +65,8 @@ If not, insert git repo name as project name, and file name as description"
             (shell-command-to-string "basename `git rev-parse --show-toplevel`")))
           ;; Get the description : name of the current file
           (projdescription (file-name-nondirectory buffer-file-name))
-          (comment-style 'extra-line))
+          (comment-style 'extra-line)
+          (comment-empty-lines 'eol))
 
       ;; If the universal argument is provided, asks for a project name
       ;; and a description
@@ -100,6 +101,28 @@ If not, insert git repo name as project name, and file name as description"
 
       ;; Comment the block
       (comment-region (point-min) (point))
+
+      ;; If the comment end is the empty string, the comments ends at newlines
+      ;; Therefore no comment extension will be put by setting `comment-style'
+      ;; to `extra-lines'.
+      ;;
+      ;; We therefore need to insert the comment start string at
+      ;; the start and the end of the comment block to achieve the desired
+      ;; Epitech header look
+      ;;
+      ;; As the rest of the comment was commented using `comment-region',
+      ;; we need to insert `comment-start' more times if `comment-add' is
+      ;; different from 0
+      (if (string= comment-end "")
+          (let ((comment-start-adjusted
+                 (apply 'concat
+                        (make-list (+ 1 comment-add) comment-start))))
+            (insert comment-start-adjusted)
+            (newline)
+            (save-excursion
+              (goto-char (point-min))
+              (insert comment-start-adjusted)
+              (newline))))
 
       ;; Separate the header from the rest of the file
       (newline))))
