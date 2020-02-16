@@ -45,6 +45,14 @@
 (defconst header-epitech-description "File description:"
   "Start of file description of a standard Epitech header.")
 
+(defun get-repository-name ()
+  "Returns the name of the git repository the current buffer is in.\n
+Returns nil if not in a git repository."
+  (with-temp-buffer
+    (if (eq 0 (call-process "git" nil (current-buffer) nil
+                            "rev-parse" "--show-toplevel"))
+        (file-name-nondirectory (buffer-string)))))
+
 ;; Alias for old function name
 ;;;###autoload
 (defalias 'std-file-header 'epitech-file-header)
@@ -60,24 +68,26 @@ If not, insert git repo name as project name, and file name as description"
     (let (
           ;; Get the project name (basename of the repo's root directory)
           (projname
-           (replace-regexp-in-string
-            "\r?\n$" ""
-            (shell-command-to-string "basename `git rev-parse --show-toplevel`")))
+           (let ((repo (get-repository-name)))
+             (if repo (replace-regexp-in-string "\r?\n$" "" repo))))
           ;; Get the description : name of the current file
-          (projdescription (file-name-nondirectory buffer-file-name))
+          (projdescription
+           (if buffer-file-name (file-name-nondirectory buffer-file-name)))
           (comment-style 'extra-line)
           (comment-empty-lines 'eol))
 
-      ;; If the universal argument is provided, asks for a project name
-      ;; and a description
-      (if arg (progn
-                ;; Ask for project name
-                (setq projname (read-from-minibuffer
-                                (format "Type project name (RETURN to confirm): ")))
-                ;; Ask for project description
-                (setq projdescription
-                      (read-from-minibuffer
-                       (format "Type short file description (RETURN to confirm): ")))))
+      ;; If the universal argument is provided, or the value cannot
+      ;; automatically be found, asks for a project name and a description
+
+      ;; Ask for project name
+      (if (or arg (not projname))
+          (setq projname (read-from-minibuffer
+                          (format "Type project name (RETURN to confirm): "))))
+      ;; Ask for project description
+      (if (or arg (not projdescription))
+          (setq projdescription
+                (read-from-minibuffer
+                 (format "Type short file description (RETURN to confirm): "))))
 
       ;; Go to the start of the buffer
       (goto-char (point-min))
