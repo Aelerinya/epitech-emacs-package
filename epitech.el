@@ -57,6 +57,27 @@ Returns nil if not in a git repository."
 ;;;###autoload
 (defalias 'std-file-header 'epitech-file-header)
 
+(defun special-header-c-mode (name description)
+  "Insert a special header for `c-mode'.
+
+This header is ugly but coding style compliant
+NAME is the name of the project
+DESCRIPTION is the description of the project"
+  (insert "/*")
+  (newline)
+  (insert (concat "** " header-epitech-start
+                  (format-time-string "%Y")))
+  (newline)
+  (insert (concat "** " name))
+  (newline)
+  (insert (concat "** " header-epitech-description))
+  (newline)
+  (insert (concat "** " description))
+  (newline)
+  (insert "*/")
+  (newline)
+  (newline))
+
 ;; Inserts a standard Epitech header at the beginning of the file
 ;;;###autoload
 (defun epitech-file-header (arg)
@@ -92,51 +113,54 @@ If not, insert git repo name as project name, and file name as description"
       ;; Go to the start of the buffer
       (goto-char (point-min))
 
-      ;; Insert the first line of the header
-      (insert (concat header-epitech-start
-                      (format-time-string "%Y")))
-      (newline)
+      ;; If the user is in C mode, insert the special
+      ;; Coding Style compliant header
+      (if (eq major-mode 'c-mode) (special-header-c-mode projname projdescription)
+        (progn
+          ;; Insert the first line of the header
+          (insert (concat header-epitech-start
+                          (format-time-string "%Y")))
+          (newline)
 
-      ;; Inserts the project name
-      (insert projname)
-      (newline)
+          ;; Inserts the project name
+          (insert projname)
+          (newline)
 
-      ;; Inserts the file description header line
-      (insert header-epitech-description)
-      (newline)
+          ;; Inserts the file description header line
+          (insert header-epitech-description)
+          (newline)
 
-      ;; Inserts the file description
-      (insert projdescription)
-      (newline)
+          ;; Inserts the file description
+          (insert projdescription)
+          (newline)
 
-      ;; Comment the block
-      (comment-region (point-min) (point))
+          ;; Comment the block
+          (comment-region (point-min) (point))
 
-      ;; If the comment end is the empty string, the comments ends at newlines
-      ;; Therefore no comment extension will be put by setting `comment-style'
-      ;; to `extra-lines'.
-      ;;
-      ;; We therefore need to insert the comment start string at
-      ;; the start and the end of the comment block to achieve the desired
-      ;; Epitech header look
-      ;;
-      ;; As the rest of the comment was commented using `comment-region',
-      ;; we need to insert `comment-start' more times if `comment-add' is
-      ;; different from 0
-      (if (string= comment-end "")
-          (let ((comment-start-adjusted
-                 (apply 'concat
-                        (make-list (+ 1 comment-add) comment-start))))
-            (insert comment-start-adjusted)
-            (newline)
-            (save-excursion
-              (goto-char (point-min))
-              (insert comment-start-adjusted)
-              (newline))))
+          ;; If the comment end is the empty string, the comments ends at newlines
+          ;; Therefore no comment extension will be put by setting `comment-style'
+          ;; to `extra-lines'.
+          ;;
+          ;; We therefore need to insert the comment start string at
+          ;; the start and the end of the comment block to achieve the desired
+          ;; Epitech header look
+          ;;
+          ;; As the rest of the comment was commented using `comment-region',
+          ;; we need to insert `comment-start' more times if `comment-add' is
+          ;; different from 0
+          (if (string= comment-end "")
+              (let ((comment-start-adjusted
+                     (apply 'concat
+                            (make-list (+ 1 comment-add) comment-start))))
+                (insert comment-start-adjusted)
+                (newline)
+                (save-excursion
+                  (goto-char (point-min))
+                  (insert comment-start-adjusted)
+                  (newline))))
 
-      ;; Separate the header from the rest of the file
-      (newline))))
-
+          ;; Separate the header from the rest of the file
+          (newline))))))
 ;;;; Generating local keymaps for exotics modes.
 
 ;;; In CPerl mode, C-c C-h is used to do some help.
