@@ -46,7 +46,8 @@
   "Start of file description of a standard Epitech header.")
 
 (defun get-repository-name ()
-  "Returns the name of the git repository the current buffer is in.\n
+  "Return the name of the git repository the current buffer is in.
+
 Returns nil if not in a git repository."
   (with-temp-buffer
     (if (eq 0 (call-process "git" nil (current-buffer) nil
@@ -81,8 +82,9 @@ DESCRIPTION is the description of the project"
 ;; Inserts a standard Epitech header at the beginning of the file
 ;;;###autoload
 (defun epitech-file-header (arg)
-  "Puts a standard header at the beginning of the file according to the mode.\n
-If ARG is present, asks for project name and description.\n
+  "Puts a standard header at the beginning of the file according to the mode.
+
+If ARG is present, asks for project name and description.
 If not, insert git repo name as project name, and file name as description"
   (interactive "P")
   (save-excursion
