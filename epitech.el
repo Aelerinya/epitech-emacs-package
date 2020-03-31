@@ -37,6 +37,15 @@
 
 ;;;; Epitech header
 
+; Adjust indentation settings
+(add-hook 'c-mode-hook
+          '(lambda ()
+             (setq c-default-style "linux"
+                   c-basic-offset 4)))
+
+(setq-default tab-width 4
+              indent-tabs-mode nil)
+
 ;;;###autoload
 (global-set-key (kbd "C-c C-h") 'epitech-file-header)
 
