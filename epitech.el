@@ -79,6 +79,12 @@ DESCRIPTION is the description of the project"
   (newline)
   (newline))
 
+(defun has-shebang ()
+  "Return t if the buffer start by a shebang."
+  (if (>= (buffer-size) 2)
+      (string= (buffer-substring (point-min) (+ (point-min) 2)) "#!")
+    nil))
+
 ;; Inserts a standard Epitech header at the beginning of the file
 ;;;###autoload
 (defun epitech-file-header (arg)
@@ -97,7 +103,8 @@ If not, insert git repo name as project name, and file name as description"
           (projdescription
            (if buffer-file-name (file-name-nondirectory buffer-file-name)))
           (comment-style 'extra-line)
-          (comment-empty-lines 'eol))
+          (comment-empty-lines 'eol)
+          (header-min (point-min)))
 
       ;; If the universal argument is provided, or the value cannot
       ;; automatically be found, asks for a project name and a description
@@ -113,7 +120,20 @@ If not, insert git repo name as project name, and file name as description"
                  (format "Type short file description (RETURN to confirm): "))))
 
       ;; Go to the start of the buffer
-      (goto-char (point-min))
+      (goto-char header-min)
+
+      ;; If the buffer starts by a shebang, move one line down
+      (if (has-shebang)
+          (progn
+            ;; Move down one line
+            (forward-line)
+            ;; Insert one more newline if the shebang does not end with one
+            (if (/= (line-beginning-position) (point))
+                (newline))
+            ;; Separate the shebang and the header by an empty line
+            (newline)
+            ;; Save the starting position of the header
+            (setq header-min (point))))
 
       ;; If the user is in C mode, insert the special
       ;; Coding Style compliant header
@@ -137,7 +157,7 @@ If not, insert git repo name as project name, and file name as description"
           (newline)
 
           ;; Comment the block
-          (comment-region (point-min) (point))
+          (comment-region header-min (point))
 
           ;; If the comment end is the empty string, the comments ends at newlines
           ;; Therefore no comment extension will be put by setting `comment-style'
@@ -157,7 +177,7 @@ If not, insert git repo name as project name, and file name as description"
                 (insert comment-start-adjusted)
                 (newline)
                 (save-excursion
-                  (goto-char (point-min))
+                  (goto-char header-min)
                   (insert comment-start-adjusted)
                   (newline))))
 
